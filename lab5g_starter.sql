@@ -244,8 +244,14 @@ END;
 -- STEP 4. Use add_score, and watch the gpa change
 -- =================================================================
 
--- your comment goes here
--- your statements go here
+-- Add Rita's quiz4 score of 88.
+CALL add_score('quiz4', 5, 88);
+
+-- Add Jenna's quiz4 score of 100.
+CALL add_score('quiz4', 1, 100);
+
+-- Display all students to check their updated GPAs.
+CALL list_students();
 
 
 -- =================================================================
@@ -254,17 +260,27 @@ END;
 -- Most of this one is yours. The handout walks you through it.
 -- =================================================================
 
--- your comment goes here
--- your statements go here
+-- This procedure records attendance for a student.
+CREATE PROCEDURE record_attendance(
+    IN p_student_id INT,
+    IN p_status VARCHAR(10)
+)
+BEGIN
+    -- Insert the student's attendance status.
+    INSERT INTO attendance (student_id, status)
+    VALUES (p_student_id, p_status);
+END;
 
 
 -- =================================================================
 -- STEP 6. Test record_attendance
 -- =================================================================
 
--- your comment goes here
--- your statements go here
+-- Record student 2 as absent using lowercase.
+CALL record_attendance(2, 'absent');
 
+-- Display all attendance records to check the new row.
+SELECT * FROM attendance;
 
 -- =================================================================
 -- STEP 7. Create remove_score
@@ -272,16 +288,30 @@ END;
 -- Copy the skeleton and write the DELETE.
 -- =================================================================
 
--- your comment goes here
--- your statements go here
+-- This procedure removes a specific test score for one student.
+CREATE PROCEDURE remove_score(
+    IN p_student_id INT,
+    IN p_test_name VARCHAR(20)
+)
+BEGIN
+    -- Delete only the score matching the student and test name.
+    DELETE FROM test_scores
+    WHERE student_id = p_student_id
+      AND test_name = p_test_name;
+END;
 
 
 -- =================================================================
 -- STEP 8. Test remove_score
 -- =================================================================
 
--- your comment goes here
--- your statements go here
+-- Remove Jenna's quiz4 score (student ID 1).
+CALL remove_score(1, 'quiz4');
+
+-- Check Jenna's GPA after removing her quiz4 score.
+SELECT student_id, first_name, last_name, gpa
+FROM students
+WHERE student_id = 1;
 
 
 -- =================================================================
@@ -289,17 +319,40 @@ END;
 --
 -- Under each call, a comment on what happened and what should have.
 -- =================================================================
+-- Add an invalid quiz5 score of -20 for Inder (student 4).
+CALL add_score('quiz5', 4, -20);
+-- What happened: The database accepted the negative score.
+-- What should happen: The procedure should reject scores below 0.
 
--- your comment goes here
--- your statements go here
+-- Check how the negative score affected the students' GPAs.
+CALL list_students();
+-- What happened: Inder's GPA decreased from 82.50 to 48.33.
+-- What should happen: An invalid score should not change the GPA.
 
+-- Remove Inder's invalid quiz5 score.
+CALL remove_score(4, 'quiz5');
+-- What happened: The invalid score was deleted.
+-- What should happen: The database should allow removal of the invalid score.
+
+-- Check that Inder's GPA returns to normal.
+CALL list_students();
+-- What happened: Inder's GPA returned to 82.50.
+-- What should happen: The GPA should be recalculated correctly.
+
+-- Try recording attendance for student 9, who does not exist.
+CALL record_attendance(9, 'present');
+-- What happened: MySQL returned ERROR 1452 because student 9 does not exist.
+-- What should happen: The procedure should show a clear error message.
 
 -- =================================================================
 -- STEP 10. List every routine in your schema
 -- =================================================================
 
--- your comment goes here
--- your statements go here
+-- List all functions and procedures in cis_students_db alphabetically.
+SELECT routine_name, routine_type
+FROM information_schema.routines
+WHERE routine_schema = 'cis_students_db'
+ORDER BY routine_name;
 
 
 -- =================================================================
